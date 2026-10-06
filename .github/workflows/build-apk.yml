@@ -19,9 +19,9 @@ jobs:
 
       - name: Extract Jeeta TV source
         run: | unzip -q jeetatv-source.zip -d jeeta-source echo "Project files:" find jeeta-source -maxdepth 3 -type f | sort | head -100 
-      - name: Fix JVM targets
+      - name: Fix Java and Kotlin JVM targets
         working-directory: jeeta-source
-        run: | python3 - <<'PY' from pathlib import Path p = Path("app/build.gradle.kts") s = p.read_text() marker = " compileSdk = 35\n" block = ''' compileSdk = 35\n\n compileOptions {\n sourceCompatibility = JavaVersion.VERSION_17\n targetCompatibility = JavaVersion.VERSION_17\n }\n\n kotlinOptions {\n jvmTarget = "17"\n }\n''' if "sourceCompatibility = JavaVersion.VERSION_17" not in s: if marker not in s: raise SystemExit("Could not find compileSdk line in app/build.gradle.kts") s = s.replace(marker, block, 1) p.write_text(s) print(p.read_text()) PY 
+        run: | sed -i '/compileSdk = 35/a\ compileOptions {\n sourceCompatibility = JavaVersion.VERSION_17\n targetCompatibility = JavaVersion.VERSION_17\n }\n kotlinOptions {\n jvmTarget = "17"\n }' app/build.gradle.kts echo "Updated app/build.gradle.kts:" sed -n '1,45p' app/build.gradle.kts 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
